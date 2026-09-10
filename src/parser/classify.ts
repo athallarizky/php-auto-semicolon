@@ -22,10 +22,6 @@ export const CONTROL_KEYWORDS = new Set([
   'declare',
 ]);
 
-const TYPE_DECL_KEYWORDS = new Set(['class', 'interface', 'trait', 'enum']);
-
-const WORD_RE = /[A-Za-z_][A-Za-z0-9_]*/g;
-
 /** First identifier-ish word of a (whitespace-collapsed) statement head. */
 export function firstWord(head: string): string {
   const m = /^[A-Za-z_\\][A-Za-z0-9_\\]*/.exec(head);
@@ -65,18 +61,36 @@ export function isDeclHead(head: string): boolean {
   if (firstWord(head) === 'use') {
     return false;
   }
-  const toks = head.match(WORD_RE) ?? [];
+  // `class Foo`, `enum Suit`, even a bare `class` awaiting its name.
+  // NOTE: function/method headers are deliberately NOT declarations —
+  // interface & abstract signatures need `;`, while class method
+  // headers are protected by the next-line-`{` lookahead instead.
+  return hasTypeDeclKeyword(head);
+}
+
+/**
+ * True when a type-declaration keyword appears at statement level.
+ * Position-aware: `Folder::class` (class-constant) and `$obj->class`
+ * (property) are expressions, not declarations — extremely common in
+ * Laravel code (`return $this->belongsTo(Folder::class, 'id')`).
+ */
+function hasTypeDeclKeyword(head: string): boolean {
+  const re = /\b(class|interface|trait|enum|new)\b/g;
+  let m: RegExpExecArray | null;
   let sawNew = false;
-  for (const t of toks) {
+  while ((m = re.exec(head)) !== null) {
+    const t = m[1];
+    const prev = m.index > 0 ? head[m.index - 1] : '';
     if (t === 'new') {
       sawNew = true;
       continue;
     }
-    if (TYPE_DECL_KEYWORDS.has(t) && !sawNew) {
-      // `class Foo`, `enum Suit`, even a bare `class` awaiting its name.
-      // NOTE: function/method headers are deliberately NOT declarations —
-      // interface & abstract signatures need `;`, while class method
-      // headers are protected by the next-line-`{` lookahead instead.
+    if (prev === ':' || prev === '>') {
+      // `::class` / `?->class` / `->class` — skip, it's an expression.
+      sawNew = false;
+      continue;
+    }
+    if (!sawNew) {
       return true;
     }
     sawNew = false;
@@ -123,7 +137,7 @@ export function classifyBrace(head: string): BraceKind {
   if (/\bfunction\s+[A-Za-z_]/.test(head)) {
     return 'declaration';
   }
-  if (/\b(?:class|interface|trait|enum)\b/.test(head)) {
+  if (hasTypeDeclKeyword(head)) {
     return 'declaration';
   }
   return 'other';

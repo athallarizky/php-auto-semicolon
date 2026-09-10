@@ -2,7 +2,7 @@
   "name": "php-auto-semi",
   "displayName": "PHP Smart Semicolon (Auto Semi)",
   "description": "Automatic Semicolon Insertion (ASI) on save for PHP, just like JavaScript/TypeScript Prettier.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "athallarizky",
   "license": "MIT",
   "repository": {

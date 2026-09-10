@@ -168,6 +168,63 @@ $ok = @unlink($file);
     expect(fix(input, analyze)).toBe(expected);
   });
 
+  it('`::class` constants never look like class declarations (Laravel relations)', () => {
+    // Real-world shape from a Laravel model — `Folder::class` inside a
+    // return statement previously poisoned decl-head detection and
+    // suppressed every semicolon in the file.
+    const input = `<?php
+
+class Folder extends Model {
+    public function parent(): BelongsTo {
+        return $this->belongsTo(Folder::class, 'parent_id')
+    }
+
+    public function children(): HasMany {
+        return $this->hasMany(Folder::class, 'parent_id')
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by')
+    }
+}
+`;
+    const expected = `<?php
+
+class Folder extends Model {
+    public function parent(): BelongsTo {
+        return $this->belongsTo(Folder::class, 'parent_id');
+    }
+
+    public function children(): HasMany {
+        return $this->hasMany(Folder::class, 'parent_id');
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+}
+`;
+    expect(fix(input, analyze)).toBe(expected);
+  });
+
+  it('`->class` property access and `::class` in arrays stay expressions', () => {
+    const input = `<?php
+return $this->morphMap([
+    'folder' => Folder::class
+])
+$x = $obj->class
+`;
+    const expected = `<?php
+return $this->morphMap([
+    'folder' => Folder::class
+]);
+$x = $obj->class;
+`;
+    expect(fix(input, analyze)).toBe(expected);
+  });
+
   it('typed by-reference parameter and nullable types do not confuse the scanner', () => {
     const input = `<?php
 function tweak(?string &$s, int|false $n): void
