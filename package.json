@@ -1,0 +1,94 @@
+{
+  "name": "php-auto-semi",
+  "displayName": "PHP Smart Semicolon (Auto Semi)",
+  "description": "Automatic Semicolon Insertion (ASI) on save for PHP, just like JavaScript/TypeScript Prettier.",
+  "version": "0.1.0",
+  "publisher": "athallarizky",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/athallarizky/php-auto-semicolon.git"
+  },
+  "bugs": {
+    "url": "https://github.com/athallarizky/php-auto-semicolon/issues"
+  },
+  "homepage": "https://github.com/athallarizky/php-auto-semicolon#readme",
+  "keywords": [
+    "php",
+    "semicolon",
+    "formatter",
+    "asi",
+    "auto insert",
+    "laravel"
+  ],
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Formatters",
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:php"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "PHP Smart Semicolon",
+      "properties": {
+        "phpAutoSemi.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable automatic semicolon insertion on save."
+        },
+        "phpAutoSemi.runOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically insert missing semicolons when saving a PHP file."
+        },
+        "phpAutoSemi.ignoreFiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/vendor/**",
+            "**/*.blade.php"
+          ],
+          "description": "Glob patterns of files to ignore."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "phpAutoSemi.insertSemicolons",
+        "title": "PHP: Insert Missing Semicolons"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "npm run typecheck && node esbuild.config.mjs --production",
+    "watch": "node esbuild.config.mjs --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "scan": "esbuild src/analyze.ts --bundle --format=cjs --platform=node --outfile=tmp/analyze.cjs --log-level=error && node scripts/scan-project.mjs",
+    "format": "prettier --write src *.mjs *.ts *.json",
+    "package": "vsce package --allow-missing-repository",
+    "vscode:prepublish": "npm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.0.0",
+    "esbuild": "^0.24.0",
+    "eslint": "^9.0.0",
+    "php-parser": "^3.7.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^3.0.0"
+  }
+}

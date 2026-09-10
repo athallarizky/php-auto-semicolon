@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+out/
+tmp/
+*.vsix
+
+# Logs & OS
+*.log
+.DS_Store
+
+# Env
+.env
+.env.*
+
+# Agent-generated directories
+.commandcode/
+.claude/
+.cursor/
+.codex/
+.copilot/
+.windsurf/
+.augment/
+.continue/
+.aider/
+.gemini/
+.opencode/
